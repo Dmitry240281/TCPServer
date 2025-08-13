@@ -118,12 +118,14 @@ public:
 			SOCKET client_socket = accept(server_socket, (sockaddr*)&client_addr, &client_addr_size);
 			if (client_socket == INVALID_SOCKET)
 			{
+				closesocket(server_socket);
+				WSACleanup();
 				std::cerr << "Ошибка при подключении." << std::endl;
 				continue;
 			}
 
 			// Поток для обработки клиента
-			client_threads.emplace_back(std::thread(&TcpServer::HandleClient, *this, client_socket, ++client_counter));
+			client_threads.emplace_back(std::thread(&TcpServer::HandleClient, this, client_socket, ++client_counter));
 			client_threads.back().detach();
 			{
 				std::lock_guard<std::mutex> lock(cout_mutex);
